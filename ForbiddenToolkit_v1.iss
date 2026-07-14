@@ -30,9 +30,10 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; Main executable
-Source: "{#SourceDir}\ForbiddenToolkit.exe";   DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourceDir}\dist\ForbiddenToolkit.exe";   DestDir: "{app}"; Flags: ignoreversion
 
 ; Branding and splash
+Source: "{#SourceDir}\ForbiddenToolkit.ico";   DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\ForbidLogo2.png";         DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\SplashVideo.mp4";          DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\SplashSound.wav";          DestDir: "{app}"; Flags: ignoreversion
@@ -48,9 +49,9 @@ Source: "{#SourceDir}\error.wav";                DestDir: "{app}"; Flags: ignore
 Source: "{#SourceDir}\ExifTool\*"; DestDir: "{app}\ExifTool"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\ForbiddenToolkit";        Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\ForbiddenToolkit";        Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\ForbiddenToolkit.ico"
 Name: "{group}\Uninstall ForbiddenToolkit"; Filename: "{uninstallexe}"
-Name: "{userdesktop}\ForbiddenToolkit"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{userdesktop}\ForbiddenToolkit"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\ForbiddenToolkit.ico"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent

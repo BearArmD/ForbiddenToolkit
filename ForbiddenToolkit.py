@@ -774,6 +774,10 @@ def main():
 
     # ── Root window ──
     root=tk.Tk()
+    try:
+        root.iconbitmap(os.path.join(APP_DIR, "ForbiddenToolkit.ico"))
+    except Exception:
+        pass
     root.title("ForbiddenToolkit -- Forbidden Cheese Development")
     root.geometry("920x680")
     root.minsize(700,520)
