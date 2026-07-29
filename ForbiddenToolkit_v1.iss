@@ -1,9 +1,13 @@
+; ForbiddenToolkit -- Inno Setup script (v1.2)
+; Forbidden Cheese Development
+; Drive-agnostic: every source is relative to THIS .iss folder via {#SourcePath}.
+; Per-user install, no UAC. Compile: Build menu -> Compile (F9).
+
 #define MyAppName "ForbiddenToolkit"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.2"
 #define MyAppPublisher "Forbidden Cheese Development"
-#define MyAppURL "https://github.com/BearArmD"
+#define MyAppURL "https://github.com/BearArmD/ForbiddenToolkit"
 #define MyAppExeName "ForbiddenToolkit.exe"
-#define SourceDir "D:\Forbid_Files\ForbiddenToolkit"
 
 [Setup]
 AppId={{FC-TOOLKIT-V1-2026}
@@ -13,8 +17,8 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 DefaultDirName={autopf}\ForbiddenToolkit
 DefaultGroupName=Forbidden Cheese Development
-OutputDir={#SourceDir}\Output
-OutputBaseFilename=ForbiddenToolkit_Setup_v1
+OutputDir={#SourcePath}Output
+OutputBaseFilename=ForbiddenToolkit_Setup_v1_2
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -29,29 +33,29 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-; Main executable
-Source: "{#SourceDir}\dist\ForbiddenToolkit.exe";   DestDir: "{app}"; Flags: ignoreversion
+; Main executable (PyInstaller output)
+Source: "{#SourcePath}dist\ForbiddenToolkit.exe"; DestDir: "{app}"; Flags: ignoreversion
 
-; Branding and splash
-Source: "{#SourceDir}\ForbiddenToolkit.ico";   DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourceDir}\ForbidLogo2.png";         DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourceDir}\SplashVideo.mp4";          DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourceDir}\SplashSound.wav";          DestDir: "{app}"; Flags: ignoreversion
+; Branding + splash
+Source: "{#SourcePath}ForbiddenToolkit.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}ForbidLogo2.png";      DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}SplashVideo.mp4";      DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}SplashSound.WAV";      DestDir: "{app}"; Flags: ignoreversion
 
-; Audio files
-Source: "{#SourceDir}\BGM.wav";                  DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourceDir}\welcome.wav";              DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourceDir}\results.wav";              DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourceDir}\nomatch.wav";              DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourceDir}\error.wav";                DestDir: "{app}"; Flags: ignoreversion
+; Audio
+Source: "{#SourcePath}BGM.WAV";     DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}welcome.wav"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}results.wav"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}nomatch.wav"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourcePath}error.wav";   DestDir: "{app}"; Flags: ignoreversion
 
 ; ExifTool -- full folder with dependencies
-Source: "{#SourceDir}\ExifTool\*"; DestDir: "{app}\ExifTool"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#SourcePath}ExifTool\*"; DestDir: "{app}\ExifTool"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\ForbiddenToolkit";        Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\ForbiddenToolkit.ico"
+Name: "{group}\ForbiddenToolkit";           Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\ForbiddenToolkit.ico"
 Name: "{group}\Uninstall ForbiddenToolkit"; Filename: "{uninstallexe}"
-Name: "{userdesktop}\ForbiddenToolkit"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\ForbiddenToolkit.ico"
+Name: "{userdesktop}\ForbiddenToolkit";     Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon; IconFilename: "{app}\ForbiddenToolkit.ico"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
@@ -63,16 +67,16 @@ var
   ConfigPath: String;
   Lines: TArrayOfString;
 begin
-  AppPath   := ExpandConstant('{app}');
+  AppPath := ExpandConstant('{app}');
   ConfigPath := AppPath + '\fk_config.ini';
 
   SetArrayLength(Lines, 14);
   Lines[0]  := '[paths]';
   Lines[1]  := 'logo_path = '    + AppPath + '\ForbidLogo2.png';
   Lines[2]  := 'splash_video = ' + AppPath + '\SplashVideo.mp4';
-  Lines[3]  := 'splash_audio = ' + AppPath + '\SplashSound.wav';
+  Lines[3]  := 'splash_audio = ' + AppPath + '\SplashSound.WAV';
   Lines[4]  := 'exiftool = '     + AppPath + '\ExifTool\ExifTool.exe';
-  Lines[5]  := 'bgm_wav = '      + AppPath + '\BGM.wav';
+  Lines[5]  := 'bgm_wav = '      + AppPath + '\BGM.WAV';
   Lines[6]  := 'welcome_wav = '  + AppPath + '\welcome.wav';
   Lines[7]  := 'results_wav = '  + AppPath + '\results.wav';
   Lines[8]  := 'nomatch_wav = '  + AppPath + '\nomatch.wav';

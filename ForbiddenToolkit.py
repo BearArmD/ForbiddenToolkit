@@ -69,7 +69,7 @@ EXIFTOOL_CANDIDATES = [
 def find_exiftool():
     for c in EXIFTOOL_CANDIDATES:
         try:
-            r = subprocess.run([c, "-ver"], capture_output=True, timeout=5,
+            r = subprocess.run([c, "-ver"], stdin=subprocess.DEVNULL, capture_output=True, timeout=5,
                                creationflags=subprocess.CREATE_NO_WINDOW)
             if r.returncode == 0:
                 return c
@@ -233,8 +233,11 @@ def show_splash():
 
     bgm_pause()
 
-    fps     = cap.get(cv2.CAP_PROP_FPS) or 30
-    frame_s = 1.0 / fps
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+    if fps <= 0:
+        fps = 30.0
+    total_frames = cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0
+
     root.update()
     win_w = root.winfo_width()
     win_h = root.winfo_height()
@@ -250,27 +253,55 @@ def show_splash():
     overlay.bind("<Button-1>", skip)
     root.bind("<KeyPress>", skip)
 
+    # Audio plays full-speed on its own thread -- it is the master clock.
     if aud and os.path.isfile(aud):
         import winsound
         threading.Thread(
             target=lambda: winsound.PlaySound(aud, winsound.SND_FILENAME),
             daemon=True).start()
 
+    # ── Wall-clock frame-drop sync ────────────────────────────────────────────
+    # Each pass: compute which frame SHOULD be showing for the elapsed time,
+    # cheaply grab()-skip everything we've fallen behind on, and retrieve()
+    # (decode) ONLY the frame we actually draw. A slow render drops frames
+    # instead of stretching the video, so audio and video finish together.
+    start = time.time()
+    last_decoded = -1
     photo_ref = [placeholder]
     try:
         while not skipped[0]:
-            t0 = time.time()
-            ret, frame = cap.read()
+            elapsed = time.time() - start
+            target = int(elapsed * fps)
+
+            # Ran past the clip -> stop (keeps video length ~= audio length).
+            if total_frames and target >= total_frames:
+                break
+
+            # Ahead of schedule -> pump the UI, wait a hair, re-check.
+            if target <= last_decoded:
+                root.update()
+                time.sleep(0.003)
+                continue
+
+            # Skip the backlog cheaply; only the target frame gets decoded.
+            ended = False
+            while last_decoded < target:
+                if not cap.grab():
+                    ended = True
+                    break
+                last_decoded += 1
+            if ended:
+                break
+
+            ret, frame = cap.retrieve()
             if not ret:
                 break
+
             resized = cv2.resize(frame, (win_w, win_h), interpolation=cv2.INTER_LINEAR)
             rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
             photo_ref[0] = ImageTk.PhotoImage(Image.fromarray(rgb))
             overlay.itemconfig(image_id, image=photo_ref[0])
             root.update()
-            spent = time.time() - t0
-            if frame_s - spent > 0:
-                time.sleep(frame_s - spent)
     except Exception:
         pass
 
@@ -661,7 +692,7 @@ def build_strings_tab(parent):
 
 def _run_exiftool(exe, file_path):
     try:
-        r=subprocess.run([exe,file_path],capture_output=True,timeout=30,
+        r=subprocess.run([exe,file_path],stdin=subprocess.DEVNULL,capture_output=True,timeout=30,
                          creationflags=subprocess.CREATE_NO_WINDOW)
         out=r.stdout.decode("utf-8",errors="replace").strip()
         err=r.stderr.decode("utf-8",errors="replace").strip()
@@ -778,7 +809,7 @@ def main():
         root.iconbitmap(os.path.join(APP_DIR, "ForbiddenToolkit.ico"))
     except Exception:
         pass
-    root.title("ForbiddenToolkit -- Forbidden Cheese Development")
+    root.title("ForbiddenToolkit v1.2 -- Forbidden Cheese Development")
     root.geometry("920x680")
     root.minsize(700,520)
     root.configure(bg=DARK_BG)
